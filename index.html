@@ -8,6 +8,7 @@
 <meta property="og:title" content="Asim Ayaz — DevOps Engineer">
 <meta property="og:description" content="CS student at UET Mardan. Building infrastructure, containerizing systems, engineering the future.">
 <meta property="og:type" content="website">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23080C10'/%3E%3Crect x='1' y='1' width='30' height='30' rx='5' fill='none' stroke='%2300D9FF' stroke-width='1' opacity='0.4'/%3E%3Ctext x='5' y='22' font-family='monospace' font-size='16' font-weight='bold' fill='%2300D9FF'%3E%3E_%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -688,6 +689,191 @@ footer {
   .about-stats { grid-template-columns: 1fr 1fr; }
 }
 
+/* ── DESIGN UPGRADE ───────────────────────────────── */
+
+/* Scanline overlay — subtle CRT texture on entire page */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.03) 2px,
+    rgba(0,0,0,0.03) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* Hex grid ambient glow on hero */
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -200px;
+  right: -200px;
+  width: 700px;
+  height: 700px;
+  background: radial-gradient(ellipse at center,
+    rgba(0,217,255,0.04) 0%,
+    rgba(0,217,255,0.02) 40%,
+    transparent 70%
+  );
+  pointer-events: none;
+}
+.hero::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: -100px;
+  width: 500px;
+  height: 300px;
+  background: radial-gradient(ellipse at center,
+    rgba(63,185,80,0.03) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+/* Glitch animation on hero name */
+@keyframes glitch-1 {
+  0%,95%,100% { clip-path: none; transform: none; }
+  96% { clip-path: polygon(0 20%, 100% 20%, 100% 40%, 0 40%); transform: translateX(-3px); }
+  97% { clip-path: polygon(0 60%, 100% 60%, 100% 80%, 0 80%); transform: translateX(3px); }
+  98% { clip-path: polygon(0 10%, 100% 10%, 100% 30%, 0 30%); transform: translateX(-2px); }
+  99% { clip-path: none; transform: none; }
+}
+@keyframes glitch-color {
+  0%,95%,100% { color: var(--text); text-shadow: none; }
+  96% { color: var(--cyan); text-shadow: -2px 0 #ff0055, 2px 0 var(--cyan); }
+  98% { color: var(--text); text-shadow: 2px 0 #ff0055; }
+}
+.hero-name {
+  animation: glitch-1 8s infinite, glitch-color 8s infinite;
+}
+
+/* Neon border glow on terminal */
+.terminal {
+  box-shadow:
+    0 0 0 1px rgba(0,217,255,0.08),
+    0 0 20px rgba(0,217,255,0.06),
+    0 20px 60px rgba(0,0,0,0.6),
+    inset 0 0 60px rgba(0,217,255,0.01) !important;
+}
+
+/* Project card — deep glow on hover */
+.project-card {
+  transition: background 0.25s ease, box-shadow 0.35s ease, transform 0.25s ease !important;
+}
+.project-card:hover {
+  background: var(--bg-elevated) !important;
+  box-shadow:
+    0 0 0 1px rgba(0,217,255,0.15),
+    0 0 30px rgba(0,217,255,0.06),
+    0 20px 40px rgba(0,0,0,0.4);
+  transform: translateY(-2px);
+}
+
+/* Featured card — permanent cyan left border glow */
+.project-card.featured {
+  border-left: 2px solid rgba(0,217,255,0.4) !important;
+  box-shadow:
+    -4px 0 20px rgba(0,217,255,0.08),
+    0 0 0 1px rgba(0,217,255,0.06) !important;
+}
+
+/* Skill tags — staggered reveal shimmer */
+@keyframes tag-shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+.skill-tag.primary {
+  background: linear-gradient(
+    90deg,
+    rgba(0,217,255,0.08),
+    rgba(0,217,255,0.15),
+    rgba(0,217,255,0.08)
+  );
+  background-size: 200% auto;
+  animation: tag-shimmer 3s linear infinite;
+}
+
+/* Nav logo — typed cursor blink */
+.nav-logo::after {
+  content: '▋';
+  color: var(--cyan);
+  animation: blink 1s step-end infinite;
+  font-size: 0.7rem;
+  margin-left: 1px;
+}
+
+/* Section divider — animated scan line */
+.section-label {
+  position: relative;
+}
+.section-label::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 50%;
+  width: calc(100% - 120px);
+  height: 1px;
+  background: linear-gradient(90deg, var(--border), transparent);
+}
+
+/* Status dot — multi-ring pulse */
+.status-dot {
+  box-shadow:
+    0 0 0 0 rgba(63,185,80,0.4),
+    0 0 6px var(--green) !important;
+  animation: status-rings 2.5s ease-out infinite !important;
+}
+@keyframes status-rings {
+  0%   { box-shadow: 0 0 0 0 rgba(63,185,80,0.5), 0 0 6px var(--green); }
+  50%  { box-shadow: 0 0 0 5px rgba(63,185,80,0), 0 0 10px var(--green); }
+  100% { box-shadow: 0 0 0 0 rgba(63,185,80,0), 0 0 6px var(--green); }
+}
+
+/* Featured badge — animated border */
+@keyframes border-flow {
+  0%   { border-color: rgba(0,217,255,0.2); }
+  50%  { border-color: rgba(0,217,255,0.6); }
+  100% { border-color: rgba(0,217,255,0.2); }
+}
+.featured-badge {
+  animation: border-flow 2.5s ease-in-out infinite;
+}
+
+/* Contact terminal — subtle glow */
+.contact-terminal {
+  box-shadow:
+    0 0 0 1px rgba(0,217,255,0.06),
+    0 0 20px rgba(0,217,255,0.04);
+}
+
+/* API card — special accent (newest project) */
+.project-card.api-card {
+  border-top: 2px solid rgba(0,217,255,0.5) !important;
+}
+.project-card.api-card::before {
+  background: linear-gradient(90deg, var(--cyan), #7B61FF) !important;
+}
+
+/* Link external icon micro-animation */
+.project-link svg {
+  transition: transform 0.2s ease;
+}
+.project-link:hover svg {
+  transform: translate(1px, -1px);
+}
+
+/* Scrollbar thumb — glow on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: var(--cyan) !important;
+  box-shadow: 0 0 8px var(--cyan);
+}
+
 /* ── Photo ────────────────────────────────────────── */
 .about-photo-wrap {
   position: relative;
@@ -918,7 +1104,7 @@ footer {
         <div class="skill-tags">
           <span class="skill-tag primary">C++</span>
           <span class="skill-tag primary">JavaScript</span>
-          <span class="skill-tag">Python</span>
+          <span class="skill-tag primary">Python</span>
           <span class="skill-tag">HTML/CSS</span>
           <span class="skill-tag">SQL</span>
           <span class="skill-tag">JSON</span>
@@ -1096,23 +1282,28 @@ footer {
         </div>
       </div>
 
-      <!-- API Playground -->
-      <div class="project-card reveal" style="transition-delay:0.1s">
+      <!-- API Sisyphus -->
+      <div class="project-card api-card reveal" style="transition-delay:0.1s">
         <div class="project-number">05 / TOOL</div>
-        <div class="project-name">API Testing Playground</div>
+        <div class="project-name">API Sisyphus</div>
         <p class="project-desc">
-          A lightweight browser-based API testing tool, a minimal
-          Postman alternative. Send HTTP requests, inspect responses,
-          set headers, and test endpoints without leaving the browser.
-          Built to solve a real developer workflow problem.
+          A browser-native API testing tool — zero install, zero friction.
+          Send GET, POST, PUT, DELETE requests, inspect headers and
+          response bodies, set custom headers, and test endpoints
+          without leaving the browser. Named after the myth: pushing
+          requests up the hill, one endpoint at a time.
         </p>
         <div class="project-stack">
           <span class="stack-tag">JavaScript</span>
           <span class="stack-tag">HTML/CSS</span>
           <span class="stack-tag">Fetch API</span>
-          <span class="stack-tag">GitHub</span>
+          <span class="stack-tag">Vercel</span>
         </div>
         <div class="project-links">
+          <a href="https://api-sisyphus.vercel.app/" target="_blank" rel="noopener" class="project-link">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5"/><path fill-rule="evenodd" d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0z"/></svg>
+            Live Demo
+          </a>
           <a href="https://github.com/asimayazmrd0987-glitch/API-Testing-Playground" target="_blank" rel="noopener" class="project-link">
             <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
             GitHub
@@ -1235,6 +1426,7 @@ const lines = [
   { type: 'out',  text: 'KDL-website    UP   (deployed)' },
   { type: 'out',  text: 'web-linux       UP   (deployed)' },
   { type: 'out',  text: 'devops-dojo     UP   (deployed)' },
+  { type: 'out',  text: 'api-sisyphus    UP   (deployed)' },
   { type: 'cmd',  text: 'uname -a' },
   { type: 'out',  text: 'Linux | Docker | C++ | Fedora' },
   { type: 'cmd',  text: '' },
