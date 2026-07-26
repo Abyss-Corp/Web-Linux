@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Asim Ayaz — DevOps Engineer</title>
+<title>Asim Ayaz DevOps Engineer</title>
 <meta name="description" content="Asim Ayaz — DevOps Engineer from Mardan, Pakistan. CS student at UET Mardan specializing in Linux, Docker, and infrastructure engineering.">
 <meta property="og:title" content="Asim Ayaz — DevOps Engineer">
 <meta property="og:description" content="CS student at UET Mardan. Building infrastructure, containerizing systems, engineering the future.">
@@ -860,6 +860,37 @@ body::after {
   background: linear-gradient(90deg, var(--cyan), #7B61FF) !important;
 }
 
+/* Security card — threat/attack-path accent (Attack Path Visualizer) */
+.project-card.security-card.featured {
+  border-left: 2px solid rgba(255,92,92,0.45) !important;
+  box-shadow:
+    -4px 0 20px rgba(255,92,92,0.07),
+    0 0 0 1px rgba(0,217,255,0.06) !important;
+}
+.project-card.security-card::before {
+  background: linear-gradient(90deg, #FF5C5C, var(--cyan)) !important;
+}
+.security-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: #FF8C7A;
+  background: rgba(255,92,92,0.08);
+  border: 1px solid rgba(255,92,92,0.25);
+  padding: 0.25rem 0.6rem;
+  border-radius: 2px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  animation: border-flow-red 2.5s ease-in-out infinite;
+}
+@keyframes border-flow-red {
+  0%   { border-color: rgba(255,92,92,0.2); }
+  50%  { border-color: rgba(255,92,92,0.6); }
+  100% { border-color: rgba(255,92,92,0.2); }
+}
+
 /* Link external icon micro-animation */
 .project-link svg {
   transition: transform 0.2s ease;
@@ -1003,7 +1034,7 @@ body::after {
         </div>
         <div class="about-stats" style="margin-top:2rem;">
           <div class="stat-item">
-            <div class="stat-value">3nd</div>
+            <div class="stat-value">3rd</div>
             <div class="stat-label">Semester, UET Mardan</div>
           </div>
           <div class="stat-item">
@@ -1198,9 +1229,62 @@ body::after {
         </div>
       </div>
 
+      <!-- Featured: Attack Path Visualizer -->
+      <div class="project-card featured security-card reveal">
+        <div class="featured-left">
+          <div>
+            <span class="security-badge">⚡ Latest Build</span>
+          </div>
+          <div class="project-number">02 / SECURITY TOOL</div>
+          <div class="project-name">Attack Path Visualizer</div>
+          <p class="project-desc">
+            An open-source tool that turns a flat list of vulnerability findings
+            into a graph of predicted attack paths, from internet-facing entry
+            points to crown-jewel assets. Reads an open JSON findings format,
+            auto-layers the graph by attack depth, and walks every entry-to-target
+            route itself, ranking each by a heuristic risk score — no path is
+            hand-picked. Mark a finding remediated and every path through it
+            flips to blocked live, so it's obvious which single fix kills the
+            most risk. The risk formula is documented in the open on purpose:
+            it's a triage heuristic, not a verified exploit chain, and the
+            README says exactly that.
+          </p>
+          <div class="project-stack">
+            <span class="stack-tag">React</span>
+            <span class="stack-tag">Vite</span>
+            <span class="stack-tag">Graph Algorithms</span>
+            <span class="stack-tag">Open Source</span>
+            <span class="stack-tag">MIT License</span>
+            <span class="stack-tag">Security</span>
+          </div>
+        </div>
+        <div class="featured-right">
+          <div style="background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;font-family:var(--mono);font-size:0.78rem;">
+            <div style="color:var(--text-dim);margin-bottom:0.75rem;"># open findings format — anyone can write an adapter</div>
+            <div style="color:var(--text-muted);">{</div>
+            <div style="padding-left:1rem;color:#A5D6FF;">"id"<span style="color:var(--text-muted)">: </span><span style="color:#A8FF78;">"e1"</span><span style="color:var(--text-muted)">,</span></div>
+            <div style="padding-left:1rem;color:#A5D6FF;">"label"<span style="color:var(--text-muted)">: </span><span style="color:#A8FF78;">"Exposed RDP :3389"</span><span style="color:var(--text-muted)">,</span></div>
+            <div style="padding-left:1rem;color:#A5D6FF;">"type"<span style="color:var(--text-muted)">: </span><span style="color:#A8FF78;">"entry"</span><span style="color:var(--text-muted)">,</span></div>
+            <div style="padding-left:1rem;color:#A5D6FF;">"severity"<span style="color:var(--text-muted)">: </span><span style="color:#FF8C7A;">"critical"</span><span style="color:var(--text-muted)">,</span></div>
+            <div style="padding-left:1rem;color:#A5D6FF;">"confidence"<span style="color:var(--text-muted)">: </span><span style="color:#79C0FF;">91</span></div>
+            <div style="color:var(--text-muted);">}</div>
+          </div>
+          <div class="project-links">
+            <a href="https://attack-path-visualizer.vercel.app/" target="_blank" rel="noopener" class="project-link">
+              <svg viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5"/><path fill-rule="evenodd" d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0z"/></svg>
+              Live Demo
+            </a>
+            <a href="https://github.com/asimayazmrd0987-glitch/Attack-Path-Visualizer" target="_blank" rel="noopener" class="project-link">
+              <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+              GitHub
+            </a>
+          </div>
+        </div>
+      </div>
+
       <!-- Web Linux -->
       <div class="project-card reveal">
-        <div class="project-number">02 / WEB APP</div>
+        <div class="project-number">03 / WEB APP</div>
         <div class="project-name">Web Linux Simulation</div>
         <p class="project-desc">
           A full Ubuntu desktop OS simulated entirely in the browser.
@@ -1230,7 +1314,7 @@ body::after {
 
       <!-- DevOps Dojo -->
       <div class="project-card reveal" style="transition-delay:0.1s">
-        <div class="project-number">03 / DEVOPS TOOL</div>
+        <div class="project-number">04 / DEVOPS TOOL</div>
         <div class="project-name">DevOps Dojo</div>
         <p class="project-desc">
           A developer tooling platform targeting the DevOps workflow.
@@ -1258,7 +1342,7 @@ body::after {
 
       <!-- MyShell -->
       <div class="project-card reveal">
-        <div class="project-number">04 / SYSTEMS</div>
+        <div class="project-number">05 / SYSTEMS</div>
         <div class="project-name">MyShell — C++ Shell</div>
         <p class="project-desc">
           A cross-platform shell interpreter in C++ demonstrating 13 OOP
@@ -1284,7 +1368,7 @@ body::after {
 
       <!-- API Sisyphus -->
       <div class="project-card api-card reveal" style="transition-delay:0.1s">
-        <div class="project-number">05 / TOOL</div>
+        <div class="project-number">06 / TOOL</div>
         <div class="project-name">API Sisyphus</div>
         <p class="project-desc">
           A browser-native API testing tool — zero install, zero friction.
@@ -1331,7 +1415,7 @@ body::after {
           kernel level, not just the framework layer, let's talk.
         </p>
         <p>
-          I respond fastest on GitHub and X. For professional enquiries,
+          I respond fastest on GitHub, LinkedIn and X. For professional enquiries,
           reach out on any platform below.
         </p>
         <div class="contact-links">
@@ -1340,6 +1424,14 @@ body::after {
             <div class="cli-info">
               <span class="cli-label">GitHub</span>
               <span class="cli-val">asimayazmrd0987-glitch</span>
+            </div>
+            <span class="cli-arrow">→</span>
+          </a>
+          <a href="https://www.linkedin.com/in/asim-ayaz0/" target="_blank" rel="noopener" class="contact-link-item">
+            <div class="cli-icon">💼</div>
+            <div class="cli-info">
+              <span class="cli-label">LinkedIn</span>
+              <span class="cli-val">asim-ayaz0</span>
             </div>
             <span class="cli-arrow">→</span>
           </a>
@@ -1359,7 +1451,7 @@ body::after {
             </div>
             <span class="cli-arrow">→</span>
           </a>
-          <a href="https://kuwait-diagnostic-laboratory-websit.vercel.app/" target="_blank" rel="noopener" class="contact-link-item">
+          <a href="https://web-linux-delta.vercel.app/" target="_blank" rel="noopener" class="contact-link-item">
             <div class="cli-icon">🌐</div>
             <div class="cli-info">
               <span class="cli-label">Live Projects</span>
@@ -1391,7 +1483,8 @@ body::after {
           <div class="ct-line"><span style="padding-left:2rem" class="ct-string">"Linux"</span></div>
           <div class="ct-line"><span style="padding-left:1rem" class="ct-bracket">],</span></div>
           <div class="ct-line"><span style="padding-left:1rem" class="ct-key">"email"</span><span class="ct-bracket">: </span><span class="ct-string">"asimayazmrd0987@gmail.com"</span><span class="ct-bracket">,</span></div>
-          <div class="ct-line"><span style="padding-left:1rem" class="ct-key">"github"</span><span class="ct-bracket">: </span><span class="ct-string">"asimayazmrd0987-glitch"</span></div>
+          <div class="ct-line"><span style="padding-left:1rem" class="ct-key">"github"</span><span class="ct-bracket">: </span><span class="ct-string">"asimayazmrd0987-glitch"</span><span class="ct-bracket">,</span></div>
+          <div class="ct-line"><span style="padding-left:1rem" class="ct-key">"linkedin"</span><span class="ct-bracket">: </span><span class="ct-string">"asim-ayaz0"</span></div>
           <div class="ct-line ct-bracket">}</div>
         </div>
       </div>
@@ -1423,7 +1516,8 @@ const lines = [
   { type: 'out',  text: 'CS Student @ UET Mardan' },
   { type: 'out',  text: 'Building infra since semester 1' },
   { type: 'cmd',  text: 'docker ps --filter status=running' },
-  { type: 'out',  text: 'KDL-website    UP   (deployed)' },
+  { type: 'out',  text: 'KDL-website     UP   (deployed)' },
+  { type: 'out',  text: 'attack-path-viz UP   (deployed)' },
   { type: 'out',  text: 'web-linux       UP   (deployed)' },
   { type: 'out',  text: 'devops-dojo     UP   (deployed)' },
   { type: 'out',  text: 'api-sisyphus    UP   (deployed)' },
