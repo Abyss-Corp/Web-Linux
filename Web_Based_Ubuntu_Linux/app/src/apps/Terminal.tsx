@@ -29,6 +29,8 @@ const COMMANDS: Record<string, (args: string[], ctx: TerminalContext) => string 
     '  \x1b[33mtouch\x1b[0m <file>  - Create empty file',
     '  \x1b[33mhistory\x1b[0m       - Show command history',
     '  \x1b[33mgit\x1b[0m [cmd]     - Git operations (simulated)',
+    '  \x1b[33mtheme\x1b[0m         - Show Powerlevel10k theme status',
+    '  \x1b[33mp10k\x1b[0m          - Install Powerlevel10k simulation',
     '  \x1b[33mvim\x1b[0m <file>    - Open file in editor (simulated)',
     '  \x1b[33mnano\x1b[0m <file>   - Open file in nano (simulated)',
     '  \x1b[33mhtop\x1b[0m          - System monitor (simulated)',
@@ -36,6 +38,24 @@ const COMMANDS: Record<string, (args: string[], ctx: TerminalContext) => string 
     '  \x1b[33mcowsay\x1b[0m <text> - Display message with cow',
     '  \x1b[33mlolcat\x1b[0m <text> - Display text with rainbow colors',
     '  \x1b[33mhelp\x1b[0m          - Show this help message',
+  ],
+
+  theme: () => [
+    '\x1b[1;35m╭─ Powerlevel10k Theme Status ─╮\x1b[0m',
+    '\x1b[1;32m│ Theme: \x1b[0m\x1b[33mPowerlevel10k\x1b[0m \x1b[1;32mactive\x1b[0m              \x1b[1;35m│\x1b[0m',
+    '\x1b[1;32m│ Shell: \x1b[0m\x1b[36mOh My Zsh\x1b[0m \x1b[1;32mready\x1b[0m                \x1b[1;35m│\x1b[0m',
+    '\x1b[1;32m│ Prompt: \x1b[0m\x1b[34mrobbyrussell\x1b[0m style + icons      \x1b[1;35m│\x1b[0m',
+    '\x1b[1;35m╰────────────────────────────────╯\x1b[0m',
+    '',
+    '\x1b[90mTip: run \\x1b[33mp10k\\x1b[90m to re-install the prompt theme simulation.\x1b[0m',
+  ],
+
+  p10k: () => [
+    '\x1b[32mInstalling Powerlevel10k styled prompt...\x1b[0m',
+    '\x1b[36m✓ icons enabled\x1b[0m',
+    '\x1b[36m✓ transient prompt enabled\x1b[0m',
+    '\x1b[36m✓ color palette tuned to Ubuntu dark\x1b[0m',
+    '\x1b[36m✓ prompt ready for \\x1b[33mweb linux\\x1b[36m shell\x1b[0m',
   ],
 
   ls: (args, ctx) => {
@@ -319,11 +339,6 @@ const COMMANDS: Record<string, (args: string[], ctx: TerminalContext) => string 
     '  gp=\x1b[33mgit push\x1b[0m',
     '  ..=\x1b[33mcd ..\x1b[0m',
   ],
-
-  clear: (_args, ctx) => {
-    ctx.clear();
-    return '';
-  },
 };
 
 interface TerminalContext {
@@ -343,12 +358,13 @@ export default function Terminal() {
   const fs = useFileSystem();
   const [lines, setLines] = useState<TerminalLine[]>([
     { type: 'success', text: '\x1b[1;35m╭──────────────────────────────────────────╮\x1b[0m' },
-    { type: 'success', text: '\x1b[1;35m│\x1b[0m   \x1b[1;36mWelcome to Web Linux\x1b[0m                  \x1b[1;35m│\x1b[0m' },
+    { type: 'success', text: '\x1b[1;35m│\x1b[0m   \x1b[1;36mWeb Linux\x1b[0m \x1b[90mBrowser Terminal\x1b[0m             \x1b[1;35m│\x1b[0m' },
     { type: 'success', text: '\x1b[1;35m│\x1b[0m   \x1b[33mOh My Zsh\x1b[0m + \x1b[32mPowerlevel10k\x1b[0m Theme      \x1b[1;35m│\x1b[0m' },
+    { type: 'success', text: '\x1b[1;35m│\x1b[0m   \x1b[90mStatus: \x1b[0m\x1b[92mPrompt ready\x1b[0m                   \x1b[1;35m│\x1b[0m' },
     { type: 'success', text: '\x1b[1;35m╰──────────────────────────────────────────╯\x1b[0m' },
     { type: 'system', text: '' },
     { type: 'output', text: '\x1b[36mType \x1b[33m"help"\x1b[36m for available commands.\x1b[0m' },
-    { type: 'output', text: '\x1b[90mTry: \x1b[33mls\x1b[90m, \x1b[33mgit status\x1b[90m, \x1b[33mneofetch\x1b[90m, \x1b[33mcowsay hello\x1b[90m, \x1b[33mfiglet web\x1b[0m' },
+    { type: 'output', text: '\x1b[90mTry: \x1b[33mls\x1b[90m, \x1b[33mgit status\x1b[90m, \x1b[33mneofetch\x1b[90m, \x1b[33mtheme\x1b[90m, \x1b[33mp10k\x1b[0m' },
     { type: 'output', text: '' },
   ]);
   const [input, setInput] = useState('');

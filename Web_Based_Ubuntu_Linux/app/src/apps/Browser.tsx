@@ -47,8 +47,179 @@ const NEWS_ARTICLES = [
 // ---- Simulated pages ----
 const IFRAME_FRIENDLY_SITES = ['example.com', 'wikipedia.org', 'ubuntu.com'];
 
-const generateSimulatedPage = (url: string): string => {
+const escapeHtml = (value: string) =>
+  value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+
+const buildSitePage = (url: string): string => {
   const host = url.replace(/^https?:\/\//, '').split('/')[0];
+  const safeHost = escapeHtml(host);
+
+  if (host.includes('youtube.com')) {
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <style>
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body {
+            font-family: Inter, Arial, sans-serif;
+            background: linear-gradient(180deg, #0f0f11, #16161b);
+            color: #f5f5f5;
+            min-height: 100vh;
+          }
+          .shell {
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 28px 18px 48px;
+          }
+          .topbar {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 22px;
+          }
+          .logo {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: grid;
+            place-items: center;
+            background: linear-gradient(135deg, #ff3b30, #ff5f6d);
+            font-weight: bold;
+            color: white;
+          }
+          .search {
+            flex: 1;
+            background: #222227;
+            border: 1px solid #33333a;
+            padding: 14px 16px;
+            border-radius: 999px;
+            color: #fafafa;
+            font-size: 14px;
+          }
+          .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 18px;
+          }
+          .card {
+            background: #1c1c22;
+            border: 1px solid #2f2f38;
+            border-radius: 18px;
+            overflow: hidden;
+          }
+          .thumb {
+            height: 140px;
+            background: linear-gradient(135deg, #ff3b30, #f9a825, #8e24aa);
+          }
+          .content {
+            padding: 14px;
+          }
+          .badge {
+            display: inline-block;
+            margin-bottom: 10px;
+            background: rgba(255, 59, 48, 0.18);
+            color: #ff7b73;
+            padding: 4px 8px;
+            border-radius: 999px;
+            font-size: 11px;
+            text-transform: uppercase;
+          }
+          .title { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+          .meta { color: #9ca3af; font-size: 12px; }
+          .action {
+            margin-top: 18px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            border-radius: 10px;
+            background: #ff3b30;
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="shell">
+          <div class="topbar">
+            <div class="logo">▶</div>
+            <input class="search" value="${safeHost}" aria-label="Search" />
+          </div>
+          <div class="grid">
+            <article class="card">
+              <div class="thumb"></div>
+              <div class="content">
+                <span class="badge">Now trending</span>
+                <div class="title">Web Linux Desktop: powerful browser simulation</div>
+                <div class="meta">2.3M views • 3 days ago</div>
+              </div>
+            </article>
+            <article class="card">
+              <div class="thumb" style="background: linear-gradient(135deg, #3a86ff, #8338ec, #ff006e);"></div>
+              <div class="content">
+                <span class="badge">Recommended</span>
+                <div class="title">Build polished desktop apps in the browser</div>
+                <div class="meta">842K views • 1 week ago</div>
+              </div>
+            </article>
+            <article class="card">
+              <div class="thumb" style="background: linear-gradient(135deg, #06d6a0, #0d9488, #2563eb);"></div>
+              <div class="content">
+                <span class="badge">Latest</span>
+                <div class="title">The next generation of web-based Linux desktops</div>
+                <div class="meta">512K views • 2 weeks ago</div>
+              </div>
+            </article>
+          </div>
+          <a class="action" href="${escapeHtml(url)}" target="_blank">Open the real site externally</a>
+        </div>
+      </body>
+      </html>
+    `;
+  }
+
+  if (host.includes('github.com')) {
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <style>
+          body { margin:0; background:#0d1117; color:#f0f6fc; font-family:Arial,sans-serif; }
+          .wrap { max-width:900px; margin: 40px auto; padding: 20px; }
+          .card { background:#161b22; border:1px solid #30363d; border-radius:14px; padding:20px; }
+          .repo { color:#58a6ff; font-size:18px; font-weight:700; margin-bottom: 10px; }
+          .desc { color:#8b949e; line-height:1.6; }
+          .chips { display:flex; gap:8px; margin-top:16px; flex-wrap:wrap; }
+          .chip { padding:6px 10px; background:#21262d; border-radius:999px; font-size:12px; }
+        </style>
+      </head>
+      <body>
+        <div class="wrap">
+          <div class="card">
+            <div class="repo">${safeHost}</div>
+            <div class="desc">This is a polished GitHub-style mockup rendered inside the Web Linux browser. It mirrors the feel of the site while keeping the desktop sandbox safe.</div>
+            <div class="chips">
+              <span class="chip">repo</span>
+              <span class="chip">ui</span>
+              <span class="chip">desktop</span>
+              <span class="chip">browser</span>
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+  }
+
   return `
     <!DOCTYPE html>
     <html>
@@ -93,13 +264,13 @@ const generateSimulatedPage = (url: string): string => {
     </head>
     <body>
       <div class="header">
-        <h1>${host}</h1>
-        <p>Simulated page for UbuntuOS Browser</p>
+        <h1>${safeHost}</h1>
+        <p>Pro browser fallback for UbuntuOS</p>
       </div>
       <div class="content">
-        <h2>Welcome to ${host}</h2>
-        <p>This is a simulated version of the website running inside UbuntuOS Browser. Many real websites block iframe embedding for security reasons.</p>
-        <p>In a real environment, this page would load the actual website content. For this demo, you're seeing a placeholder with the structure of the requested site.</p>
+        <h2>Welcome to ${safeHost}</h2>
+        <p>This is a safe simulated version of the site running inside the UbuntuOS browser sandbox. Many real websites actively block iframe embedding for security reasons.</p>
+        <p>For the best experience, the browser keeps a polished preview and offers a direct external open action when needed.</p>
         <div class="links">
           <a href="#" class="link-item">Home</a>
           <a href="#" class="link-item">About</a>
@@ -388,7 +559,6 @@ export default function Browser() {
       return <SearchResults query={activeTab.url.replace('search://', '')} onNavigate={navigateTo} />;
     }
 
-    // For real URLs, show iframe or error
     const host = activeTab.url.replace(/^https?:\/\//, '').split('/')[0];
     const isIframeFriendly = IFRAME_FRIENDLY_SITES.some((s) => host.includes(s));
 
@@ -404,11 +574,10 @@ export default function Browser() {
       );
     }
 
-    // Show simulated page
     return (
       <iframe
         ref={iframeRef}
-        srcDoc={generateSimulatedPage(activeTab.url)}
+        srcDoc={buildSitePage(activeTab.url)}
         className="w-full h-full border-0"
         title={activeTab.title}
       />
