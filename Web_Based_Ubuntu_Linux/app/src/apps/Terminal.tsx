@@ -347,6 +347,7 @@ const COMMANDS: Record<string, (args: string[], ctx: TerminalContext) => string 
     const node = ctx.findNodeByPath(searchPath.startsWith('/') ? searchPath : `${ctx.currentPath}/${searchPath}`);
     if (!node) return `find: '${searchPath}': No such file or directory`;
     const walk = (current: ReturnType<typeof useFileSystem>['findNodeByPath'] extends (...args: never[]) => infer R ? R : never, prefix = ''): string[] => {
+      if (!current) return [];
       const children = ctx.getChildren(current.id);
       const paths = children.map((child) => `${prefix}${child.name}${child.type === 'folder' ? '/' : ''}`);
       children.forEach((child) => {
