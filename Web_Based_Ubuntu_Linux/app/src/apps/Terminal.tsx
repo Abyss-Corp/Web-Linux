@@ -13,31 +13,41 @@ interface TerminalLine {
 const COMMANDS: Record<string, (args: string[], ctx: TerminalContext) => string | string[]> = {
   help: () => [
     '\x1b[36mAvailable commands:\x1b[0m',
-    '  \x1b[33mls\x1b[0m [path]     - List directory contents',
-    '  \x1b[33mcd\x1b[0m [path]     - Change directory',
-    '  \x1b[33mpwd\x1b[0m           - Print working directory',
-    '  \x1b[33mmkdir\x1b[0m <name>  - Create directory',
-    '  \x1b[33mrm\x1b[0m <name>     - Remove file or directory',
-    '  \x1b[33mcat\x1b[0m <file>    - Display file contents',
-    '  \x1b[33mecho\x1b[0m <text>   - Print text',
-    '  \x1b[33mclear\x1b[0m         - Clear terminal',
-    '  \x1b[33mwhoami\x1b[0m        - Print current user',
-    '  \x1b[33mdate\x1b[0m          - Print current date and time',
-    '  \x1b[33muname\x1b[0m         - Print system info',
-    '  \x1b[33mneofetch\x1b[0m      - Display system information',
-    '  \x1b[33mcalc\x1b[0m <expr>   - Calculate expression',
-    '  \x1b[33mtouch\x1b[0m <file>  - Create empty file',
-    '  \x1b[33mhistory\x1b[0m       - Show command history',
-    '  \x1b[33mgit\x1b[0m [cmd]     - Git operations (simulated)',
-    '  \x1b[33mtheme\x1b[0m         - Show Powerlevel10k theme status',
-    '  \x1b[33mp10k\x1b[0m          - Install Powerlevel10k simulation',
-    '  \x1b[33mvim\x1b[0m <file>    - Open file in editor (simulated)',
-    '  \x1b[33mnano\x1b[0m <file>   - Open file in nano (simulated)',
-    '  \x1b[33mhtop\x1b[0m          - System monitor (simulated)',
-    '  \x1b[33mfiglet\x1b[0m <text> - Create ASCII art banners',
-    '  \x1b[33mcowsay\x1b[0m <text> - Display message with cow',
-    '  \x1b[33mlolcat\x1b[0m <text> - Display text with rainbow colors',
-    '  \x1b[33mhelp\x1b[0m          - Show this help message',
+    '  \x1b[33mls\x1b[0m [-la] [path]   - List directory contents',
+    '  \x1b[33mcd\x1b[0m [path]       - Change directory',
+    '  \x1b[33mpwd\x1b[0m             - Print working directory',
+    '  \x1b[33mmkdir\x1b[0m [-p] <name> - Create directory',
+    '  \x1b[33mrmdir\x1b[0m <name>     - Remove empty directory',
+    '  \x1b[33mrm\x1b[0m [-rf] <name>  - Remove file or directory',
+    '  \x1b[33mcp\x1b[0m <src> <dst>   - Copy files or folders',
+    '  \x1b[33mmv\x1b[0m <src> <dst>   - Move or rename paths',
+    '  \x1b[33mcat\x1b[0m <file>      - Display file contents',
+    '  \x1b[33mhead\x1b[0m <file>     - Show first lines of a file',
+    '  \x1b[33mtail\x1b[0m <file>     - Show last lines of a file',
+    '  \x1b[33mgrep\x1b[0m <pattern> [path] - Search file contents',
+    '  \x1b[33mfind\x1b[0m [path]     - Recursively list files',
+    '  \x1b[33mecho\x1b[0m <text>     - Print text',
+    '  \x1b[33mclear\x1b[0m           - Clear terminal',
+    '  \x1b[33mwhoami\x1b[0m          - Print current user',
+    '  \x1b[33mdate\x1b[0m            - Print current date and time',
+    '  \x1b[33muname\x1b[0m           - Print system info',
+    '  \x1b[33mneofetch\x1b[0m        - Display system information',
+    '  \x1b[33mcalc\x1b[0m <expr>     - Calculate expression',
+    '  \x1b[33mtouch\x1b[0m <file>    - Create empty file',
+    '  \x1b[33mchmod\x1b[0m <mode> <file> - Simulated permission change',
+    '  \x1b[33mps\x1b[0m              - Show current processes',
+    '  \x1b[33mtop\x1b[0m             - Show system summary',
+    '  \x1b[33mhistory\x1b[0m         - Show command history',
+    '  \x1b[33mgit\x1b[0m [cmd]       - Git operations (simulated)',
+    '  \x1b[33mtheme\x1b[0m           - Show Powerlevel10k theme status',
+    '  \x1b[33mp10k\x1b[0m            - Install Powerlevel10k simulation',
+    '  \x1b[33mvim\x1b[0m <file>      - Open file in editor (simulated)',
+    '  \x1b[33mnano\x1b[0m <file>     - Open file in nano (simulated)',
+    '  \x1b[33mhtop\x1b[0m            - System monitor (simulated)',
+    '  \x1b[33mfiglet\x1b[0m <text>   - Create ASCII art banners',
+    '  \x1b[33mcowsay\x1b[0m <text>   - Display message with cow',
+    '  \x1b[33mlolcat\x1b[0m <text>   - Display text with rainbow colors',
+    '  \x1b[33mhelp\x1b[0m            - Show this help message',
   ],
 
   theme: () => [
@@ -59,13 +69,16 @@ const COMMANDS: Record<string, (args: string[], ctx: TerminalContext) => string 
   ],
 
   ls: (args, ctx) => {
-    const targetPath = args[0] || ctx.currentPath;
+    const showHidden = args.includes('-a') || args.includes('-la') || args.includes('-al');
+    const targetPath = args.find((a) => !a.startsWith('-')) || ctx.currentPath;
     const node = ctx.findNodeByPath(targetPath);
     if (!node) return `\x1b[31mls: cannot access '${targetPath}': No such file or directory\x1b[0m`;
     if (node.type === 'file') return `\x1b[37m${node.name}\x1b[0m`;
     const children = ctx.getChildren(node.id);
     if (children.length === 0) return '';
-    return children.map((c) => {
+    const visibleChildren = showHidden ? children : children.filter((c) => !c.name.startsWith('.'));
+    if (visibleChildren.length === 0) return '';
+    return visibleChildren.map((c) => {
       if (c.type === 'folder') {
         return `\x1b[1;34m📁 ${c.name}/\x1b[0m`;
       } else if (c.name.endsWith('.sh') || c.name.endsWith('.py') || c.name.endsWith('.js')) {
@@ -114,9 +127,30 @@ const COMMANDS: Record<string, (args: string[], ctx: TerminalContext) => string 
 
   mkdir: (args, ctx) => {
     if (!args[0]) return 'mkdir: missing operand';
+    const createParents = args.includes('-p');
+    const targetName = args.find((arg) => !arg.startsWith('-'));
+    if (!targetName) return 'mkdir: missing operand';
     const currentNode = ctx.findNodeByPath(ctx.currentPath);
     if (!currentNode) return 'mkdir: cannot create directory';
-    ctx.createFolder(currentNode.id, args[0]);
+    const existing = ctx.getChildren(currentNode.id).find((child) => child.name === targetName);
+    if (existing) {
+      if (createParents) return '';
+      return `mkdir: cannot create directory '${targetName}': File exists`;
+    }
+    ctx.createFolder(currentNode.id, targetName);
+    return '';
+  },
+
+  rmdir: (args, ctx) => {
+    if (!args[0]) return 'rmdir: missing operand';
+    const currentNode = ctx.findNodeByPath(ctx.currentPath);
+    if (!currentNode) return 'rmdir: cannot remove directory';
+    const target = ctx.getChildren(currentNode.id).find((child) => child.name === args[0]);
+    if (!target) return `rmdir: failed to remove '${args[0]}': No such file or directory`;
+    if (target.type !== 'folder') return `rmdir: failed to remove '${args[0]}': Not a directory`;
+    const children = ctx.getChildren(target.id);
+    if (children.length > 0) return `rmdir: failed to remove '${args[0]}': Directory not empty`;
+    ctx.deleteNode(target.id);
     return '';
   },
 
@@ -130,21 +164,89 @@ const COMMANDS: Record<string, (args: string[], ctx: TerminalContext) => string 
 
   rm: (args, ctx) => {
     if (!args[0]) return 'rm: missing operand';
+    const recursive = args.includes('-r') || args.includes('-rf') || args.includes('-fr');
+    const targetName = args.find((arg) => !arg.startsWith('-'));
+    if (!targetName) return 'rm: missing operand';
     const currentNode = ctx.findNodeByPath(ctx.currentPath);
     if (!currentNode) return 'rm: cannot remove';
     const children = ctx.getChildren(currentNode.id);
-    const target = children.find((c) => c.name === args[0]);
-    if (!target) return `rm: cannot remove '${args[0]}': No such file or directory`;
+    const target = children.find((c) => c.name === targetName);
+    if (!target) return `rm: cannot remove '${targetName}': No such file or directory`;
+    if (target.type === 'folder' && !recursive) return `rm: cannot remove '${targetName}': Is a directory`;
     ctx.deleteNode(target.id);
     return '';
   },
 
+  cp: (args, ctx) => {
+    if (args.length < 2) return 'cp: missing file operand';
+    const [sourceArg, destArg] = args;
+    const sourceNode = ctx.findNodeByPath(sourceArg.startsWith('/') ? sourceArg : `${ctx.currentPath}/${sourceArg}`);
+    if (!sourceNode) return `cp: cannot stat '${sourceArg}': No such file or directory`;
+    const sourceParent = ctx.findNodeByPath(ctx.currentPath);
+    if (!sourceParent) return 'cp: failed';
+    const destPath = destArg.startsWith('/') ? destArg : `${ctx.currentPath}/${destArg}`;
+    const destNode = ctx.findNodeByPath(destPath);
+
+    if (sourceNode.type === 'file') {
+      const targetName = destNode?.type === 'folder' ? sourceNode.name : destArg.split('/').pop() || sourceNode.name;
+      const copiedId = ctx.createFile(destNode?.type === 'folder' ? destNode.id : sourceParent.id, targetName, ctx.readFile(sourceNode.id) || '');
+      return '';
+    }
+
+    if (sourceNode.type === 'folder') {
+      const targetFolderName = destNode?.type === 'folder' ? sourceNode.name : destArg.split('/').pop() || sourceNode.name;
+      const folderId = ctx.createFolder(destNode?.type === 'folder' ? destNode.id : sourceParent.id, targetFolderName);
+      const children = ctx.getChildren(sourceNode.id);
+      children.forEach((child) => {
+        const childPath = `${sourceNode.name}/${child.name}`;
+        if (child.type === 'file') {
+          ctx.createFile(folderId, child.name, ctx.readFile(child.id) || '');
+        } else {
+          const nestedFolderId = ctx.createFolder(folderId, child.name);
+          const nestedChildren = ctx.getChildren(child.id);
+          nestedChildren.forEach((nestedChild) => {
+            if (nestedChild.type === 'file') {
+              ctx.createFile(nestedFolderId, nestedChild.name, ctx.readFile(nestedChild.id) || '');
+            }
+          });
+        }
+      });
+      return '';
+    }
+    return 'cp: unsupported operand';
+  },
+
+  mv: (args, ctx) => {
+    if (args.length < 2) return 'mv: missing file operand';
+    const [sourceArg, destArg] = args;
+    const sourcePath = sourceArg.startsWith('/') ? sourceArg : `${ctx.currentPath}/${sourceArg}`;
+    const destPath = destArg.startsWith('/') ? destArg : `${ctx.currentPath}/${destArg}`;
+    const sourceNode = ctx.findNodeByPath(sourcePath);
+    if (!sourceNode) return `mv: cannot stat '${sourceArg}': No such file or directory`;
+    const destNode = ctx.findNodeByPath(destPath);
+    if (destNode?.type === 'folder') {
+      ctx.moveNode(sourceNode.id, destNode.id);
+      return '';
+    }
+    const parentNode = ctx.findNodeByPath(destPath.split('/').slice(0, -1).join('/') || '/');
+    if (!parentNode || parentNode.type !== 'folder') return `mv: cannot move '${sourceArg}' to '${destArg}'`;
+    ctx.renameNode(sourceNode.id, destArg.split('/').pop() || sourceNode.name);
+    ctx.moveNode(sourceNode.id, parentNode.id);
+    return '';
+  },
+
+  chmod: (args, ctx) => {
+    if (args.length < 2) return 'chmod: missing operand';
+    const [mode, fileArg] = args;
+    const fileNode = ctx.findNodeByPath(fileArg.startsWith('/') ? fileArg : `${ctx.currentPath}/${fileArg}`);
+    if (!fileNode) return `chmod: cannot access '${fileArg}': No such file or directory`;
+    return `chmod: simulated permission change ${mode} on ${fileArg}`;
+  },
+
   cat: (args, ctx) => {
     if (!args[0]) return 'cat: missing file operand';
-    const currentNode = ctx.findNodeByPath(ctx.currentPath);
-    if (!currentNode) return 'cat: cannot read file';
-    const children = ctx.getChildren(currentNode.id);
-    const target = children.find((c) => c.name === args[0]);
+    const targetPath = args[0].startsWith('/') ? args[0] : `${ctx.currentPath}/${args[0]}`;
+    const target = ctx.findNodeByPath(targetPath);
     if (!target) return `cat: '${args[0]}': No such file or directory`;
     if (target.type === 'folder') return `cat: '${args[0]}': Is a directory`;
     const content = ctx.readFile(target.id);
@@ -201,6 +303,79 @@ const COMMANDS: Record<string, (args: string[], ctx: TerminalContext) => string 
     return ctx.history.map((cmd, i) => `\x1b[90m${i + 1}\x1b[0m  ${cmd}`);
   },
 
+  head: (args, ctx) => {
+    if (!args[0]) return 'head: missing file operand';
+    const targetPath = args[0].startsWith('/') ? args[0] : `${ctx.currentPath}/${args[0]}`;
+    const node = ctx.findNodeByPath(targetPath);
+    if (!node || node.type !== 'file') return `head: '${args[0]}': No such file or directory`;
+    const content = ctx.readFile(node.id) || '';
+    return content.split('\n').slice(0, 10).join('\n');
+  },
+
+  tail: (args, ctx) => {
+    if (!args[0]) return 'tail: missing file operand';
+    const targetPath = args[0].startsWith('/') ? args[0] : `${ctx.currentPath}/${args[0]}`;
+    const node = ctx.findNodeByPath(targetPath);
+    if (!node || node.type !== 'file') return `tail: '${args[0]}': No such file or directory`;
+    const content = ctx.readFile(node.id) || '';
+    const lines = content.split('\n');
+    return lines.slice(-10).join('\n');
+  },
+
+  grep: (args, ctx) => {
+    if (!args[0]) return 'grep: missing pattern';
+    const pattern = args[0];
+    const fileArg = args[1] || ctx.currentPath;
+    const targetPath = fileArg.startsWith('/') ? fileArg : `${ctx.currentPath}/${fileArg}`;
+    const node = ctx.findNodeByPath(targetPath);
+    if (!node) return `grep: '${fileArg}': No such file or directory`;
+    if (node.type === 'file') {
+      const text = ctx.readFile(node.id) || '';
+      return text.split('\n').filter((line) => line.includes(pattern)).join('\n');
+    }
+    return ctx.getChildren(node.id).flatMap((child) => {
+      if (child.type === 'file') {
+        const fileContent = ctx.readFile(child.id) || '';
+        return fileContent.split('\n').filter((line) => line.includes(pattern)).map((line) => `${child.name}: ${line}`);
+      }
+      return [];
+    });
+  },
+
+  find: (args, ctx) => {
+    const searchPath = args[0] || ctx.currentPath;
+    const node = ctx.findNodeByPath(searchPath.startsWith('/') ? searchPath : `${ctx.currentPath}/${searchPath}`);
+    if (!node) return `find: '${searchPath}': No such file or directory`;
+    const walk = (current: ReturnType<typeof useFileSystem>['findNodeByPath'] extends (...args: never[]) => infer R ? R : never, prefix = ''): string[] => {
+      const children = ctx.getChildren(current.id);
+      const paths = children.map((child) => `${prefix}${child.name}${child.type === 'folder' ? '/' : ''}`);
+      children.forEach((child) => {
+        if (child.type === 'folder') {
+          paths.push(...walk(child, `${prefix}${child.name}/`));
+        }
+      });
+      return paths;
+    };
+    const result = walk(node);
+    return result;
+  },
+
+  ps: () => [
+    '  PID TTY          TIME CMD',
+    '    1 ?        00:00:00 systemd',
+    '  120 ?        00:00:01 web-shell',
+    '  234 ?        00:00:05 browser',
+    '  306 ?        00:00:03 desktop-ui',
+  ],
+
+  top: () => [
+    'top - 10:15:00 up  1 day,  4:21,  1 user,  load average: 0.32, 0.14, 0.10',
+    'Tasks:  12 total,   1 running,  11 sleeping,   0 stopped,   0 zombie',
+    '%Cpu(s):  6.3 us,  1.7 sy,  0.0 ni,  90.9 id,  0.1 wa,  0.0 hi,  0.0 si,  0.0 st',
+    'MiB Mem :   1024 total,   820 free,   204 used',
+    'MiB Swap:   2048 total,   2048 free,     0 used',
+  ],
+
   git: (args, ctx) => {
     if (!args.length) return 'git: usage: git <command> [<args>]';
     const cmd = args[0].toLowerCase();
@@ -213,6 +388,7 @@ const COMMANDS: Record<string, (args: string[], ctx: TerminalContext) => string 
         '  (use "git add <file>..." to update what will be committed)',
         '  (use "git restore <file>..." to discard changes in working directory)',
         '\x1b[31m\tmodified:   src/apps/Terminal.tsx\x1b[0m',
+        '\x1b[31m\tmodified:   src/apps/Browser.tsx\x1b[0m',
         '',
         'no changes added to commit (use "git add" and/or "git commit -a")',
       ],
@@ -229,6 +405,9 @@ const COMMANDS: Record<string, (args: string[], ctx: TerminalContext) => string 
       commit: () => ['[main abc123] Enhanced terminal'],
       branch: () => ['* main'],
       clone: () => ['Cloning...', 'Done!'],
+      checkout: () => ['Switched to branch main'],
+      stash: () => ['Saved working directory and index state WIP on main'],
+      diff: () => ['diff --git a/src/apps/Terminal.tsx b/src/apps/Terminal.tsx', '+ theme installation flow', '- old prompt text'],
     };
     if (gitCmds[cmd]) return gitCmds[cmd]();
     return `git: '${cmd}' is not a git command. See 'git --help'.`;
@@ -350,6 +529,11 @@ interface TerminalContext {
   createFile: ReturnType<typeof useFileSystem>['createFile'];
   deleteNode: ReturnType<typeof useFileSystem>['deleteNode'];
   readFile: ReturnType<typeof useFileSystem>['readFile'];
+  getNodeById: ReturnType<typeof useFileSystem>['getNodeById'];
+  getNodePath: ReturnType<typeof useFileSystem>['getNodePath'];
+  renameNode: ReturnType<typeof useFileSystem>['renameNode'];
+  moveNode: ReturnType<typeof useFileSystem>['moveNode'];
+  writeFile: ReturnType<typeof useFileSystem>['writeFile'];
   clear: () => void;
   history: string[];
 }
@@ -394,8 +578,22 @@ export default function Terminal() {
       }
 
       const parts = trimmed.split(/\s+/);
-      const cmd = parts[0].toLowerCase();
-      const args = parts.slice(1);
+      let cmd = parts[0].toLowerCase();
+      let args = parts.slice(1);
+
+      const aliasMap: Record<string, { cmd: string; args: string[] }> = {
+        ll: { cmd: 'ls', args: ['-la'] },
+        la: { cmd: 'ls', args: ['-A'] },
+        gs: { cmd: 'git', args: ['status'] },
+        gp: { cmd: 'git', args: ['push'] },
+        '..': { cmd: 'cd', args: ['..'] },
+      };
+
+      if (aliasMap[cmd]) {
+        const alias = aliasMap[cmd];
+        cmd = alias.cmd;
+        args = alias.args;
+      }
 
       setLines((prev) => [...prev, { type: 'input', text: `${currentPath}$ ${trimmed}` }]);
 
@@ -411,6 +609,11 @@ export default function Terminal() {
         createFile: fs.createFile,
         deleteNode: fs.deleteNode,
         readFile: fs.readFile,
+        getNodeById: fs.getNodeById,
+        getNodePath: fs.getNodePath,
+        renameNode: fs.renameNode,
+        moveNode: fs.moveNode,
+        writeFile: fs.writeFile,
         clear,
         history,
       };
