@@ -44,6 +44,8 @@ const Btn: React.FC<{
   colSpan?: number;
 }> = ({ label, onClick, variant = 'num', className = '', colSpan }) => (
   <button
+    type="button" 
+    onMouseDown={(e) => e.stopPropagation()} 
     onClick={onClick}
     className={
       `h-12 rounded-md text-sm font-medium transition-all duration-75 active:scale-95 flex items-center justify-center ` +
