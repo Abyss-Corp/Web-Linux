@@ -331,27 +331,36 @@ function osReducer(state: OSState, action: OSAction): OSState {
       return { ...state, desktopIcons: next };
     }
 
-   case 'UPDATE_DESKTOP_ICON_POSITION': {
-  const { id, gridX, gridY } = action.payload; 
-  const currentIcons = state.desktopIcons;    
+case 'UPDATE_DESKTOP_ICON_POSITION': {
+  // Your action shape is: { type, id, position }
+  const { id, position } = action as any; 
+  const { x, y } = position;
+  const currentIcons = state.desktopIcons;
 
+  // We snap to a grid (e.g. 100px). Adjust the 'step' if your grid is different.
+  const step = 100; 
+  const targetGridX = Math.round(x / step) * step;
+  const targetGridY = Math.round(y / step) * step;
+
+  // 1. Check if the target position is occupied by ANOTHER icon
   const isOccupied = currentIcons.some(
-    (icon) => icon.id !== id && icon.gridX === gridX && icon.gridY === gridY
+    (icon) => icon.id !== id && Math.round(icon.position.x / step) * step === targetGridX && Math.round(icon.position.y / step) * step === targetGridY
   );
 
-  let finalX = gridX;
-  let finalY = gridY;
+  let finalX = x;
+  let finalY = y;
 
+  // 2. If occupied, find the nearest free cell by searching outward
   if (isOccupied) {
     let foundFree = false;
     for (let radius = 1; radius < 20 && !foundFree; radius++) {
       for (let dx = -radius; dx <= radius && !foundFree; dx++) {
         for (let dy = -radius; dy <= radius && !foundFree; dy++) {
-          const checkX = gridX + dx;
-          const checkY = gridY + dy;
+          const checkX = targetGridX + (dx * step);
+          const checkY = targetGridY + (dy * step);
           
           const isCheckOccupied = currentIcons.some(
-            (icon) => icon.id !== id && icon.gridX === checkX && icon.gridY === checkY
+            (icon) => icon.id !== id && Math.round(icon.position.x / step) * step === checkX && Math.round(icon.position.y / step) * step === checkY
           );
           
           if (!isCheckOccupied) {
@@ -364,10 +373,11 @@ function osReducer(state: OSState, action: OSAction): OSState {
     }
   }
 
+  // 3. Update state with the safe coordinates
   return {
     ...state,
     desktopIcons: currentIcons.map((icon) =>
-      icon.id === id ? { ...icon, gridX: finalX, gridY: finalY } : icon
+      icon.id === id ? { ...icon, position: { x: finalX, y: finalY } } : icon
     ),
   };
 }
