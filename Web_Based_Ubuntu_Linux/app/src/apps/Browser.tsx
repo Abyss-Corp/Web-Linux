@@ -1,11 +1,12 @@
 // ============================================================
-// Web Browser — Tabbed browser with bookmarks and homepage
+// Web Browser — Tabbed browser with bookmarks, downloads, and enhanced mocks
 // ============================================================
 
 import { useState, useRef, useEffect, useCallback, memo } from 'react';
 import {
   ArrowLeft, ArrowRight, RefreshCw, Home, Star, Plus, X, Lock, Search,
-  Globe, Youtube, Github, Twitter, Linkedin, ShoppingBag, Newspaper, Code
+  Globe, Youtube, Github, Twitter, Linkedin, ShoppingBag, Newspaper, Code,
+  Download, ExternalLink, AlertCircle, Loader
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -22,6 +23,15 @@ interface Tab {
 interface Bookmark {
   url: string;
   title: string;
+}
+
+interface Download {
+  id: string;
+  url: string;
+  filename: string;
+  size: number;
+  progress: number;
+  completed: boolean;
 }
 
 // ---- Quick Links ----
@@ -44,7 +54,7 @@ const NEWS_ARTICLES = [
   { title: 'WebAssembly Now Supported in All Major Browsers', source: 'webassembly.org', time: '8h ago' },
 ];
 
-// ---- Simulated pages ----
+// ---- Simulated pages with enhanced mock content ----
 const IFRAME_FRIENDLY_SITES = ['example.com', 'wikipedia.org', 'ubuntu.com'];
 
 const escapeHtml = (value: string) =>
@@ -55,7 +65,7 @@ const escapeHtml = (value: string) =>
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
 
-const buildSitePage = (url: string): string => {
+const buildSitePage = (url: string, onDownload: (url: string, filename: string) => void): string => {
   const host = url.replace(/^https?:\/\//, '').split('/')[0];
   const safeHost = escapeHtml(host);
 
@@ -113,7 +123,10 @@ const buildSitePage = (url: string): string => {
             border: 1px solid #2f2f38;
             border-radius: 18px;
             overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.2s;
           }
+          .card:hover { transform: translateY(-4px); }
           .thumb {
             height: 140px;
             background: linear-gradient(135deg, #ff3b30, #f9a825, #8e24aa);
@@ -151,7 +164,7 @@ const buildSitePage = (url: string): string => {
         <div class="shell">
           <div class="topbar">
             <div class="logo">▶</div>
-            <input class="search" value="${safeHost}" aria-label="Search" />
+            <input class="search" value="${safeHost}" aria-label="Search" readonly />
           </div>
           <div class="grid">
             <article class="card">
@@ -200,6 +213,7 @@ const buildSitePage = (url: string): string => {
           .desc { color:#8b949e; line-height:1.6; }
           .chips { display:flex; gap:8px; margin-top:16px; flex-wrap:wrap; }
           .chip { padding:6px 10px; background:#21262d; border-radius:999px; font-size:12px; }
+          .btn { display:inline-block; margin-top:20px; padding:10px 16px; background:#238636; color:white; text-decoration:none; border-radius:6px; font-weight:600; }
         </style>
       </head>
       <body>
@@ -212,6 +226,52 @@ const buildSitePage = (url: string): string => {
               <span class="chip">ui</span>
               <span class="chip">desktop</span>
               <span class="chip">browser</span>
+            </div>
+            <a class="btn" href="${escapeHtml(url)}" target="_blank">Clone on GitHub</a>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+  }
+
+  if (host.includes('stackoverflow.com')) {
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <style>
+          body { margin:0; background:#f6f6f6; color:#3b4045; font-family:Arial,sans-serif; }
+          .wrap { max-width:1100px; margin: 40px auto; padding: 20px; }
+          .card { background:white; border:1px solid #e3e6e8; border-radius:8px; padding:24px; margin-bottom:16px; }
+          .title { color:#0074cc; font-size:20px; font-weight:400; margin-bottom:12px; }
+          .meta { color:#6a737c; font-size:13px; margin-bottom:16px; }
+          .tags { display:flex; gap:6px; flex-wrap:wrap; }
+          .tag { padding:4px 8px; background:#e1ecf4; color:#39739d; border-radius:4px; font-size:12px; }
+        </style>
+      </head>
+      <body>
+        <div class="wrap">
+          <div class="card">
+            <div class="title">How to build a web-based Linux desktop environment?</div>
+            <div class="meta">Asked 2 hours ago • Viewed 1.2k times</div>
+            <p>I'm trying to create a browser-based Ubuntu-like desktop. What are the best practices for managing windows, tabs, and state?</p>
+            <div class="tags">
+              <span class="tag">javascript</span>
+              <span class="tag">react</span>
+              <span class="tag">ubuntu</span>
+              <span class="tag">desktop</span>
+            </div>
+          </div>
+          <div class="card">
+            <div class="title">Why do iframes fail to load external sites?</div>
+            <div class="meta">Asked yesterday • Viewed 3.4k times</div>
+            <p>When I try to embed Google or YouTube in an iframe, the page shows a blank screen or an error. What's happening?</p>
+            <div class="tags">
+              <span class="tag">iframe</span>
+              <span class="tag">security</span>
+              <span class="tag">x-frame-options</span>
             </div>
           </div>
         </div>
@@ -242,6 +302,17 @@ const buildSitePage = (url: string): string => {
         }
         .header h1 { font-size: 32px; margin-bottom: 8px; }
         .header p { font-size: 16px; opacity: 0.9; }
+        .alert {
+          background: #fff3cd;
+          border: 1px solid #ffc107;
+          color: #856404;
+          padding: 16px;
+          border-radius: 8px;
+          margin-bottom: 24px;
+          display: flex;
+          align-items: flex-start;
+          gap: 12px;
+        }
         .content {
           background: white;
           padding: 30px;
@@ -250,33 +321,36 @@ const buildSitePage = (url: string): string => {
         }
         .content h2 { color: #7C4DFF; margin-bottom: 16px; }
         .content p { line-height: 1.7; margin-bottom: 12px; }
-        .links { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-top: 20px; }
-        .link-item {
-          background: #f8f8f8;
-          padding: 16px;
-          border-radius: 8px;
+        .btn {
+          display: inline-block;
+          margin-top: 20px;
+          padding: 12px 24px;
+          background: #7C4DFF;
+          color: white;
           text-decoration: none;
-          color: #333;
-          transition: transform 0.2s, box-shadow 0.2s;
+          border-radius: 8px;
+          font-weight: 600;
+          transition: background 0.2s;
         }
-        .link-item:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .btn:hover { background: #6b3ee6; }
       </style>
     </head>
     <body>
       <div class="header">
         <h1>${safeHost}</h1>
-        <p>Pro browser fallback for UbuntuOS</p>
+        <p>UbuntuOS Browser Sandbox</p>
+      </div>
+      <div class="alert">
+        <div>
+          <strong>Why you're seeing this page:</strong>
+          <p style="margin-top:8px;">Most websites block iframe embedding for security reasons (X-Frame-Options or CSP headers). This is a simulated preview of ${safeHost}.</p>
+        </div>
       </div>
       <div class="content">
         <h2>Welcome to ${safeHost}</h2>
-        <p>This is a safe simulated version of the site running inside the UbuntuOS browser sandbox. Many real websites actively block iframe embedding for security reasons.</p>
-        <p>For the best experience, the browser keeps a polished preview and offers a direct external open action when needed.</p>
-        <div class="links">
-          <a href="#" class="link-item">Home</a>
-          <a href="#" class="link-item">About</a>
-          <a href="#" class="link-item">Services</a>
-          <a href="#" class="link-item">Contact</a>
-        </div>
+        <p>This is a safe simulated version of the site running inside the UbuntuOS browser sandbox. The real site cannot be embedded due to security restrictions.</p>
+        <p>To visit the actual website, click the button below:</p>
+        <a href="${escapeHtml(url)}" target="_blank" class="btn">Open ${safeHost} in new tab</a>
       </div>
     </body>
     </html>
@@ -380,10 +454,11 @@ const Homepage = memo(function Homepage({ onNavigate }: { onNavigate: (url: stri
 // ---- Search Results Page ----
 const SearchResults = memo(function SearchResults({ query, onNavigate }: { query: string; onNavigate: (url: string) => void }) {
   const results = [
-    { title: `${query} - Search Results`, url: `https://google.com/search?q=${encodeURIComponent(query)}`, desc: `Find information about ${query} on the web.` },
+    { title: `${query} - Google Search`, url: `https://google.com/search?q=${encodeURIComponent(query)}`, desc: `Search results for ${query} from Google.` },
     { title: `${query} - Wikipedia`, url: `https://wikipedia.org/wiki/${encodeURIComponent(query)}`, desc: `Read about ${query} on Wikipedia, the free encyclopedia.` },
-    { title: `${query} tutorials and guides`, url: 'https://stackoverflow.com', desc: `Learn about ${query} with tutorials, examples, and documentation.` },
-    { title: `${query} news and updates`, url: 'https://news.ycombinator.com', desc: `Latest news and discussions about ${query}.` },
+    { title: `${query} - Stack Overflow`, url: `https://stackoverflow.com/questions/tagged/${encodeURIComponent(query)}`, desc: `Questions and answers about ${query} on Stack Overflow.` },
+    { title: `${query} - GitHub`, url: `https://github.com/search?q=${encodeURIComponent(query)}`, desc: `Code repositories related to ${query} on GitHub.` },
+    { title: `${query} news and updates`, url: `https://news.ycombinator.com/item?id=${encodeURIComponent(query)}`, desc: `Latest news and discussions about ${query}.` },
   ];
 
   return (
@@ -396,7 +471,7 @@ const SearchResults = memo(function SearchResults({ query, onNavigate }: { query
           <div key={i} className="p-4 rounded-lg bg-white" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
             <button
               onClick={() => onNavigate(r.url)}
-              className="text-left block"
+              className="text-left block w-full"
             >
               <h3 style={{ fontSize: '15px', fontWeight: 500, color: '#1a0dab', marginBottom: '4px' }}>{r.title}</h3>
               <p style={{ fontSize: '12px', color: '#006621', marginBottom: '4px' }}>{r.url}</p>
@@ -409,7 +484,6 @@ const SearchResults = memo(function SearchResults({ query, onNavigate }: { query
   );
 });
 
-// ---- Error Page ----
 // ---- Main Browser Component ----
 export default function Browser() {
   const [tabs, setTabs] = useState<Tab[]>([
@@ -422,6 +496,8 @@ export default function Browser() {
       return saved ? JSON.parse(saved) : [];
     } catch { return []; }
   });
+  const [downloads, setDownloads] = useState<Download[]>([]);
+  const [showDownloads, setShowDownloads] = useState(false);
   const [addressBarValue, setAddressBarValue] = useState('');
   const showBookmarks = true;
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -431,6 +507,11 @@ export default function Browser() {
   useEffect(() => {
     localStorage.setItem('ubuntuos_browser_bookmarks', JSON.stringify(bookmarks));
   }, [bookmarks]);
+
+  // Sync address bar when switching tabs
+  useEffect(() => {
+    setAddressBarValue(activeTab.url === 'home' ? '' : activeTab.url);
+  }, [activeTab]);
 
   const updateActiveTab = useCallback((updates: Partial<Tab>) => {
     setTabs((prev) => prev.map((t) => (t.id === activeTabId ? { ...t, ...updates } : t)));
@@ -450,19 +531,19 @@ export default function Browser() {
           if (newHistory[newHistory.length - 1] !== normalized) {
             newHistory.push(normalized);
           }
-          const title = normalized === 'home' ? 'New Tab' : normalized.replace(/^https?:\/\//, '').split('/')[0];
+          const title = normalized === 'home' ? 'New Tab' : 
+                       normalized.startsWith('search://') ? `Search: ${normalized.replace('search://', '')}` :
+                       normalized.replace(/^https?:\/\//, '').split('/')[0];
           return { ...t, url: normalized, title, history: newHistory, historyIndex: newHistory.length - 1, loading: false };
         })
       );
-      setAddressBarValue(normalized === 'home' ? '' : normalized);
-    }, 300);
+    }, 400);
   }, [activeTabId, updateActiveTab]);
 
   const addTab = useCallback(() => {
     const newTab: Tab = { id: generateId(), url: 'home', title: 'New Tab', history: ['home'], historyIndex: 0, loading: false };
     setTabs((prev) => [...prev, newTab]);
     setActiveTabId(newTab.id);
-    setAddressBarValue('');
   }, []);
 
   const closeTab = useCallback((tabId: string) => {
@@ -516,9 +597,39 @@ export default function Browser() {
     });
   }, [activeTab]);
 
+  const simulateDownload = useCallback((url: string, filename: string) => {
+    const download: Download = {
+      id: generateId(),
+      url,
+      filename,
+      size: Math.floor(Math.random() * 50000000) + 1000000, // 1-50 MB
+      progress: 0,
+      completed: false,
+    };
+    setDownloads((prev) => [download, ...prev]);
+
+    // Simulate download progress
+    const interval = setInterval(() => {
+      setDownloads((prev) =>
+        prev.map((d) => {
+          if (d.id === download.id) {
+            const newProgress = Math.min(d.progress + 10, 100);
+            if (newProgress >= 100) {
+              clearInterval(interval);
+              return { ...d, progress: 100, completed: true };
+            }
+            return { ...d, progress: newProgress };
+          }
+          return d;
+        })
+      );
+    }, 200);
+  }, []);
+
   const isBookmarked = bookmarks.some((b) => b.url === activeTab.url);
   const canGoBack = activeTab.historyIndex > 0;
   const canGoForward = activeTab.historyIndex < activeTab.history.length - 1;
+  const activeDownloads = downloads.filter((d) => !d.completed).length;
 
   const handleAddressSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -531,20 +642,7 @@ export default function Browser() {
       return (
         <div className="h-full flex items-center justify-center" style={{ background: 'var(--bg-window)' }}>
           <div className="flex flex-col items-center gap-3">
-            <div
-              className="w-8 h-1 rounded-full overflow-hidden"
-              style={{ background: 'var(--border-subtle)', width: '200px' }}
-            >
-              <div
-                className="h-full rounded-full"
-                style={{
-                  background: 'linear-gradient(90deg, var(--accent-primary), var(--accent-primary-hover))',
-                  backgroundSize: '200% 100%',
-                  animation: 'shimmer 1.5s infinite',
-                  width: '100%',
-                }}
-              />
-            </div>
+            <Loader size={32} className="animate-spin" style={{ color: 'var(--accent-primary)' }} />
             <span style={{ fontSize: '12px', color: 'var(--text-disabled)' }}>Loading...</span>
           </div>
         </div>
@@ -568,7 +666,7 @@ export default function Browser() {
           ref={iframeRef}
           src={activeTab.url}
           className="w-full h-full border-0"
-          sandbox="allow-scripts allow-same-origin allow-forms"
+          sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
           title={activeTab.title}
         />
       );
@@ -577,7 +675,7 @@ export default function Browser() {
     return (
       <iframe
         ref={iframeRef}
-        srcDoc={buildSitePage(activeTab.url)}
+        srcDoc={buildSitePage(activeTab.url, simulateDownload)}
         className="w-full h-full border-0"
         title={activeTab.title}
       />
@@ -598,7 +696,7 @@ export default function Browser() {
         <button
           onClick={goBack}
           disabled={!canGoBack}
-          className="flex items-center justify-center rounded-lg transition-all"
+          className="flex items-center justify-center rounded-lg transition-all hover:bg-[var(--bg-hover)]"
           style={{ width: 32, height: 32, opacity: canGoBack ? 1 : 0.3 }}
         >
           <ArrowLeft size={16} style={{ color: 'var(--text-primary)' }} />
@@ -606,21 +704,21 @@ export default function Browser() {
         <button
           onClick={goForward}
           disabled={!canGoForward}
-          className="flex items-center justify-center rounded-lg transition-all"
+          className="flex items-center justify-center rounded-lg transition-all hover:bg-[var(--bg-hover)]"
           style={{ width: 32, height: 32, opacity: canGoForward ? 1 : 0.3 }}
         >
           <ArrowRight size={16} style={{ color: 'var(--text-primary)' }} />
         </button>
         <button
           onClick={refresh}
-          className="flex items-center justify-center rounded-lg transition-all"
+          className="flex items-center justify-center rounded-lg transition-all hover:bg-[var(--bg-hover)]"
           style={{ width: 32, height: 32 }}
         >
           <RefreshCw size={16} style={{ color: 'var(--text-primary)' }} />
         </button>
         <button
           onClick={() => navigateTo('home')}
-          className="flex items-center justify-center rounded-lg transition-all"
+          className="flex items-center justify-center rounded-lg transition-all hover:bg-[var(--bg-hover)]"
           style={{ width: 32, height: 32 }}
         >
           <Home size={16} style={{ color: 'var(--text-primary)' }} />
@@ -641,7 +739,7 @@ export default function Browser() {
               type="text"
               value={addressBarValue}
               onChange={(e) => setAddressBarValue(e.target.value)}
-              onFocus={() => setAddressBarValue(activeTab.url === 'home' ? '' : activeTab.url)}
+              placeholder="Search Google or type a URL"
               className="flex-1 bg-transparent outline-none"
               style={{ color: 'var(--text-primary)', fontSize: '13px' }}
             />
@@ -650,8 +748,9 @@ export default function Browser() {
 
         <button
           onClick={toggleBookmark}
-          className="flex items-center justify-center rounded-lg transition-all"
+          className="flex items-center justify-center rounded-lg transition-all hover:bg-[var(--bg-hover)]"
           style={{ width: 32, height: 32 }}
+          title={isBookmarked ? 'Remove bookmark' : 'Add bookmark'}
         >
           <Star
             size={16}
@@ -659,12 +758,36 @@ export default function Browser() {
             fill={isBookmarked ? 'var(--accent-secondary)' : 'none'}
           />
         </button>
+
+        <button
+          onClick={() => setShowDownloads(!showDownloads)}
+          className="flex items-center justify-center rounded-lg transition-all hover:bg-[var(--bg-hover)] relative"
+          style={{ width: 32, height: 32 }}
+          title="Downloads"
+        >
+          <Download size={16} style={{ color: 'var(--text-primary)' }} />
+          {activeDownloads > 0 && (
+            <span
+              className="absolute -top-1 -right-1 flex items-center justify-center rounded-full"
+              style={{
+                width: 16,
+                height: 16,
+                background: 'var(--accent-primary)',
+                color: 'white',
+                fontSize: '10px',
+                fontWeight: 600,
+              }}
+            >
+              {activeDownloads}
+            </span>
+          )}
+        </button>
       </div>
 
       {/* Bookmark bar */}
       {showBookmarks && bookmarks.length > 0 && (
         <div
-          className="flex items-center gap-1 px-3 shrink-0 overflow-hidden"
+          className="flex items-center gap-1 px-3 shrink-0 overflow-x-auto custom-scrollbar"
           style={{
             height: 32,
             background: 'var(--bg-titlebar)',
@@ -675,7 +798,7 @@ export default function Browser() {
             <button
               key={bm.url}
               onClick={() => navigateTo(bm.url)}
-              className="flex items-center gap-1.5 px-2 py-1 rounded transition-all hover:bg-[var(--bg-hover)]"
+              className="flex items-center gap-1.5 px-2 py-1 rounded transition-all hover:bg-[var(--bg-hover)] shrink-0"
               style={{ maxWidth: 140 }}
             >
               <Star size={12} style={{ color: 'var(--accent-secondary)', flexShrink: 0 }} fill="var(--accent-secondary)" />
@@ -685,9 +808,66 @@ export default function Browser() {
         </div>
       )}
 
+      {/* Downloads panel */}
+      {showDownloads && downloads.length > 0 && (
+        <div
+          className="shrink-0 custom-scrollbar overflow-auto"
+          style={{
+            maxHeight: 200,
+            background: 'var(--bg-titlebar)',
+            borderBottom: '1px solid var(--border-subtle)',
+            padding: '12px',
+          }}
+        >
+          <div className="flex items-center justify-between mb-2">
+            <h3 style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>Downloads</h3>
+            <button
+              onClick={() => setShowDownloads(false)}
+              className="text-xs hover:underline"
+              style={{ color: 'var(--text-secondary)' }}
+            >
+              Close
+            </button>
+          </div>
+          {downloads.map((d) => (
+            <div
+              key={d.id}
+              className="flex items-center gap-3 p-2 rounded mb-2"
+              style={{ background: 'var(--bg-window)' }}
+            >
+              <Download size={16} style={{ color: 'var(--accent-primary)', flexShrink: 0 }} />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="truncate" style={{ fontSize: '11px', color: 'var(--text-primary)' }}>
+                    {d.filename}
+                  </span>
+                  <span style={{ fontSize: '10px', color: 'var(--text-disabled)', flexShrink: 0, marginLeft: 8 }}>
+                    {d.completed ? '✓ Complete' : `${d.progress}%`}
+                  </span>
+                </div>
+                {!d.completed && (
+                  <div
+                    className="h-1 rounded-full overflow-hidden"
+                    style={{ background: 'var(--border-subtle)' }}
+                  >
+                    <div
+                      className="h-full transition-all"
+                      style={{
+                        width: `${d.progress}%`,
+                        background: 'var(--accent-primary)',
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Tab Bar */}
       <div
-        className="flex items-center gap-1 px-2 shrink-0 overflow-x-auto"
+        className="flex items-center gap-1 px-2 shrink-0 overflow-x-auto custom-scrollbar"
         style={{
           height: 36,
           background: 'var(--bg-titlebar)',
@@ -697,7 +877,7 @@ export default function Browser() {
         {tabs.map((tab) => (
           <div
             key={tab.id}
-            onClick={() => { setActiveTabId(tab.id); setAddressBarValue(tab.url === 'home' ? '' : tab.url); }}
+            onClick={() => setActiveTabId(tab.id)}
             className="flex items-center gap-2 px-3 py-1.5 rounded-t-lg cursor-pointer transition-all shrink-0 relative"
             style={{
               maxWidth: 180,
@@ -706,7 +886,11 @@ export default function Browser() {
               borderTop: tab.id === activeTabId ? '2px solid var(--accent-primary)' : '2px solid transparent',
             }}
           >
-            <Globe size={14} style={{ color: 'var(--text-secondary)', flexShrink: 0 }} />
+            {tab.loading ? (
+              <Loader size={14} className="animate-spin" style={{ color: 'var(--accent-primary)', flexShrink: 0 }} />
+            ) : (
+              <Globe size={14} style={{ color: 'var(--text-secondary)', flexShrink: 0 }} />
+            )}
             <span className="truncate flex-1" style={{ fontSize: '11px', color: 'var(--text-primary)' }}>
               {tab.title}
             </span>
