@@ -1,14 +1,6 @@
-<p align="center">
-  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&size=38&duration=3000&pause=1000&color=E95420&center=true&vCenter=true&width=700&lines=Web+Linux;A+Full+Ubuntu+Desktop+in+Your+Browser;60%2B+Applications+%7C+Zero+Installation+%7C+100%25+Client-Side" alt="Typing SVG" />
-</p>
+![](https://capsule-render.vercel.app/api?type=waving&color=0:FF0055,100:FFAA00&height=120&section=header&text=WEB%20LINUX&fontSize=32&fontColor=ffffff&animation=fadeIn)
 
-<p align="center">
-  <a href="#features"><img src="https://img.shields.io/badge/Apps-60%2B-E95420?style=flat-square" alt="Apps" /></a>
-  <img src="https://img.shields.io/badge/Stack-React%20%2B%20TypeScript%20%2B%20Vite-blueviolet?style=flat-square" alt="Stack" />
-  <img src="https://img.shields.io/badge/License-MIT-success?style=flat-square" alt="License" />
-  <img src="https://img.shields.io/badge/Privacy-100%25%20Client--Side-green?style=flat-square" alt="Privacy" />
-  <img src="https://img.shields.io/badge/Built%20with-Tailwind%20CSS-38BDF8?style=flat-square" alt="Tailwind" />
-</p>
+---
 
 <p align="center">
   <b>Web Linux</b> is a fully functional, browser-based simulation of the Ubuntu desktop environment. It runs entirely in your browser with no installation, no backend, and no data ever leaving your device — making it ideal for demos, education, and private experimentation.
@@ -32,7 +24,7 @@ It is designed to feel native and responsive — like opening a real Ubuntu sess
 
 ## 🚀 Live Demo
 
-👉 **[Try it now on Vercel](https://web-linux-abyss.vercel.app)** — open the link and start using a full Linux desktop instantly. No sign-up, no download, no cookies.
+👉 **[Try it now on Vercel](https://web-linux-delta.vercel.app/)** —> open the link and start using a full Linux desktop instantly. No sign-up, no download, no cookies.
 
 ---
 
