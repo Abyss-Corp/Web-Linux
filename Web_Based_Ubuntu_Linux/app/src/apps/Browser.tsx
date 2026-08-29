@@ -1,42 +1,27 @@
 // ============================================================
-// Web Browser — Tabbed browser with working search, simulated
-// privacy features, and download manager.
+// Web Browser — real YouTube player, real map, simulated privacy
 // ============================================================
 
 import { useState, useEffect, useCallback, memo } from 'react';
 import {
   ArrowLeft, ArrowRight, RefreshCw, Home, Star, Plus, X, Lock, Search,
   Globe, Youtube, Github, Twitter, Linkedin, ShoppingBag, Newspaper, Code,
-  Download, Loader, Shield, Eye, EyeOff, Monitor, AlertTriangle
+  Download, Loader, Shield, Eye, EyeOff, Monitor, AlertTriangle, Map
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
-interface Tab {
-  id: string;
-  url: string;
-  title: string;
-  history: string[];
-  historyIndex: number;
-  loading: boolean;
-}
-
+interface Tab { id: string; url: string; title: string; history: string[]; historyIndex: number; loading: boolean; }
 interface Bookmark { url: string; title: string; }
-
-interface DownloadItem {
-  id: string;
-  filename: string;
-  progress: number;
-  completed: boolean;
-}
+interface DownloadItem { id: string; filename: string; progress: number; completed: boolean; }
 
 const QUICK_LINKS: { icon: LucideIcon; name: string; url: string; color: string }[] = [
   { icon: Search, name: 'Google', url: 'https://google.com', color: '#4285F4' },
   { icon: Youtube, name: 'YouTube', url: 'https://youtube.com', color: '#FF0000' },
+  { icon: Map, name: 'Maps (REAL)', url: 'https://www.openstreetmap.org/export/embed.html?bbox=-0.1318%2C51.4988%2C-0.0940%2C51.5120&layer=mapnik', color: '#7ebc6f' },
   { icon: Github, name: 'GitHub', url: 'https://github.com', color: '#333' },
   { icon: Twitter, name: 'Twitter', url: 'https://twitter.com', color: '#1DA1F2' },
   { icon: Linkedin, name: 'LinkedIn', url: 'https://linkedin.com', color: '#0A66C2' },
   { icon: ShoppingBag, name: 'Amazon', url: 'https://amazon.com', color: '#FF9900' },
-  { icon: Code, name: 'Stack Overflow', url: 'https://stackoverflow.com', color: '#F48024' },
   { icon: Newspaper, name: 'Reddit', url: 'https://reddit.com', color: '#FF4500' },
 ];
 
@@ -46,13 +31,12 @@ const NEWS_ARTICLES = [
   { title: 'TypeScript 5.5 Brings Improved Type Inference', source: 'dev.to', time: '6h ago' },
 ];
 
-const IFRAME_FRIENDLY_SITES = ['example.com', 'wikipedia.org', 'ubuntu.com'];
+// Sites that ALLOW being embedded (no X-Frame-Options block)
+const IFRAME_FRIENDLY_SITES = ['example.com', 'openstreetmap.org', 'wikipedia.org', 'ubuntu.com'];
 
 const escapeHtml = (v: string) =>
   v.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
-// This tiny script makes the search box INSIDE simulated pages work.
-// It sends the query to the parent (your React app), which runs the search.
 const PAGE_SEARCH_FORM = `
   <form onsubmit="event.preventDefault(); window.parent.postMessage({action:'search', query: document.getElementById('q').value}, '*'); return false;">
     <input id="q" class="search" placeholder="Search here and press Enter" autocomplete="off" />
@@ -75,50 +59,75 @@ const buildSitePage = (url: string, adBlockerOn: boolean): string => {
     </style>
     <div class="ad-badge">🛡️ Ads Blocked</div>` : '';
 
-  const extCSS = `.ext { display:inline-block; margin:18px 24px; color:#9ca3af; font-size:12px; text-decoration:underline; }`;
+  const extCSS = `.ext { display:inline-block; margin:16px; color:#9ca3af; font-size:12px; text-decoration:underline; }`;
 
+  // ---------- YOUTUBE: REAL PLAYER (YouTube officially allows /embed/) ----------
   if (host.includes('youtube.com')) {
     return `<!DOCTYPE html><html><head><meta charset="utf-8">${adBlockCSS}<style>
       body { margin:0; font-family:Arial,sans-serif; background:#0f0f0f; color:#fff; }
-      .topbar { display:flex; padding:14px 16px; gap:14px; background:#202020; align-items:center; }
+      .topbar { display:flex; padding:12px 16px; gap:12px; background:#202020; align-items:center; }
       .logo { background:#f00; padding:4px 8px; border-radius:4px; font-weight:bold; }
       .search { flex:1; background:#121212; border:1px solid #303030; color:#fff; padding:10px 14px; border-radius:16px; }
-      .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; padding:24px; }
-      .card { background:#272727; border-radius:12px; overflow:hidden; }
-      .thumb { height:130px; background:linear-gradient(135deg,#ff3b30,#f9a825); }
-      .info { padding:12px; font-size:13px; }
-      ${extCSS} .ext { color:#9ca3af; }
+      .wrap { display:grid; grid-template-columns: 2fr 1fr; gap:16px; padding:16px; }
+      .player { width:100%; aspect-ratio:16/9; border:0; border-radius:12px; background:#000; }
+      .side { display:flex; flex-direction:column; gap:10px; }
+      .item { cursor:pointer; background:#272727; border-radius:8px; padding:10px; font-size:12px; }
+      .item:hover { background:#3f3f3f; }
+      .ext { color:#9ca3af; font-size:12px; margin:0 16px 16px; display:inline-block; }
     </style></head><body>
-      <div class="topbar"><div class="logo">▶ YouTube</div>${PAGE_SEARCH_FORM}</div>
-      <div class="grid">
-        <div class="card"><div class="thumb"></div><div class="info"><b>Linux Desktop in Browser</b><br/><small>1.2M views</small></div></div>
-        <div class="card"><div class="thumb" style="background:linear-gradient(135deg,#3a86ff,#8338ec)"></div><div class="info"><b>Web Dev Masterclass</b><br/><small>842K views</small></div></div>
-        <div class="card"><div class="thumb" style="background:linear-gradient(135deg,#06d6a0,#2563eb)"></div><div class="info"><b>Cyber Security Basics</b><br/><small>512K views</small></div></div>
+      <div class="topbar"><div class="logo">▶ YouTube</div>
+        <form style="flex:1;display:flex" onsubmit="event.preventDefault(); play(document.getElementById('q').value); return false;">
+          <input id="q" class="search" placeholder="Paste ANY YouTube link or video ID and press Enter — it plays here" />
+        </form>
       </div>
-      ${EXTERNAL_NOTE(url, host)}
+      <div class="wrap">
+        <iframe id="player" class="player" src="https://www.youtube.com/embed/aqz-KE-bpKQ"
+          allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+        <div class="side">
+          <div class="item" onclick="play('aqz-KE-bpKQ')"><b>Big Buck Bunny</b><br><small>Real video • plays inside this browser</small></div>
+          <div class="item" onclick="play('jNQXAC9IVRw')"><b>Me at the zoo</b><br><small>The first YouTube video ever</small></div>
+          <div class="item" onclick="play('9bZkp7q19f0')"><b>PSY – Gangnam Style</b><br><small>Classic • real playback</small></div>
+        </div>
+      </div>
+      <a class="ext" href="${escapeHtml(url)}" target="_blank" rel="noopener">
+        youtube.com blocks full-site embedding — but the player above is the REAL YouTube ↗
+      </a>
+      <script>
+        function extractId(v){
+          var m = v.match(/(?:youtu\\.be\\/|v=|embed\\/|shorts\\/)([\\w-]{11})/);
+          if (m) return m[1];
+          if (/^[\\w-]{11}$/.test(v.trim())) return v.trim();
+          return null;
+        }
+        function play(v){
+          var id = extractId(v || '');
+          if (id) document.getElementById('player').src = 'https://www.youtube.com/embed/' + id + '?autoplay=1';
+        }
+      </script>
     </body></html>`;
   }
 
+  // ---------- GITHUB ----------
   if (host.includes('github.com')) {
     return `<!DOCTYPE html><html><head><meta charset="utf-8">${adBlockCSS}<style>
       body { margin:0; background:#0d1117; color:#f0f6fc; font-family:Arial,sans-serif; padding:40px; }
-      .search { width:100%; background:#0d1117; border:1px solid #30363d; color:#fff; padding:10px 14px; border-radius:6px; margin-bottom:20px; }
+      .search { width:100%; background:#0d1117; border:1px solid #30363d; color:#fff; padding:10px 14px; border-radius:6px; margin-bottom:14px; }
       .card { background:#161b22; border:1px solid #30363d; border-radius:14px; padding:24px; max-width:800px; margin:auto; }
       .repo { color:#58a6ff; font-size:22px; font-weight:700; }
-      .btn { display:inline-block; margin-top:18px; padding:10px 16px; background:#238636; color:#fff; border:none; border-radius:6px; cursor:pointer; }
+      .btn { display:inline-block; margin-top:14px; padding:10px 16px; background:#238636; color:#fff; border:none; border-radius:6px; cursor:pointer; }
       ${extCSS} .ext { color:#8b949e; margin:18px 0 0; }
     </style></head><body>
       <div class="card">
         <div class="repo">${safeHost}</div>
         <p style="color:#8b949e">Web-based Linux desktop environment. Secure, simulated, privacy-focused.</p>
-        ${PAGE_SEARCH_FORM.replace('class="search"', 'style="width:100%;background:#0d1117;border:1px solid #30363d;color:#fff;padding:10px 14px;border-radius:6px;margin-bottom:14px;"')}
+        ${PAGE_SEARCH_FORM}
         <button class="btn" onclick="window.parent.postMessage({action:'download', filename:'WebLinux-v1.0.tar.gz'}, '*')">⬇ Download Source</button>
         <br/>${EXTERNAL_NOTE(url, host)}
       </div>
     </body></html>`;
   }
 
-  // Generic fallback (Google, Twitter, Amazon, etc.)
+  // ---------- GENERIC (Google, Twitter, Amazon...) ----------
   return `<!DOCTYPE html><html><head><meta charset="utf-8">${adBlockCSS}<style>
     body { font-family:Arial,sans-serif; background:#f5f5f5; padding:40px; color:#333; }
     .header { background:linear-gradient(135deg,#7C4DFF,#FF9800); color:#fff; padding:36px; border-radius:12px; max-width:760px; margin:0 auto 24px; }
@@ -126,11 +135,11 @@ const buildSitePage = (url: string, adBlockerOn: boolean): string => {
     .card { background:#fff; padding:24px; border-radius:12px; max-width:760px; margin:0 auto; box-shadow:0 2px 8px rgba(0,0,0,.08); }
     ${extCSS}
   </style></head><body>
-    <div class="header"><h1 style="margin:0 0 6px">${safeHost}</h1><p style="margin:0;opacity:.9">UbuntuOS Browser Sandbox</p>${PAGE_SEARCH_FORM.replace('class="search"', 'class="search"')}</div>
+    <div class="header"><h1 style="margin:0 0 6px">${safeHost}</h1><p style="margin:0;opacity:.9">UbuntuOS Browser Sandbox</p>${PAGE_SEARCH_FORM}</div>
     <div class="card">
       <h2 style="margin-top:0">Why am I seeing this page?</h2>
-      <p><b>${safeHost}</b> refuses to be displayed inside other websites (a security rule called X-Frame-Options). Your real Chrome browser enforces that rule, so UbuntuOS shows this safe preview instead.</p>
-      <p>Use the search box above — it works inside this browser.</p>
+      <p><b>${safeHost}</b> sends a security header (X-Frame-Options) that forbids Chrome from showing it inside any other website. Every browser on earth obeys this rule — it protects you from clickjacking.</p>
+      <p>The search box above works inside this browser. For the real site, use the link below.</p>
       ${EXTERNAL_NOTE(url, host)}
     </div>
   </body></html>`;
@@ -146,7 +155,6 @@ const normalizeUrl = (input: string): string => {
   return `https://${t}`;
 };
 
-// Stops the window-manager from stealing mouse presses so inputs can focus.
 const stopGrab = {
   onMouseDown: (e: React.MouseEvent) => e.stopPropagation(),
   onPointerDown: (e: React.PointerEvent) => e.stopPropagation(),
@@ -194,7 +202,7 @@ const Homepage = memo(function Homepage({ onNavigate }: { onNavigate: (url: stri
 const SearchResults = memo(function SearchResults({ query, onNavigate }: { query: string; onNavigate: (url: string) => void }) {
   const [refine, setRefine] = useState('');
   const results = [
-    { title: `${query} — Wikipedia`, url: `https://en.wikipedia.org/wiki/Special:Search?search=${encodeURIComponent(query)}`, desc: `Encyclopedia article about ${query}. (Loads inside this browser.)` },
+    { title: `${query} — Wikipedia`, url: `https://en.wikipedia.org/wiki/Special:Search?search=${encodeURIComponent(query)}`, desc: `Encyclopedia results for ${query}.` },
     { title: `${query} — GitHub code search`, url: `https://github.com/search?q=${encodeURIComponent(query)}`, desc: `Repositories and code related to ${query}.` },
     { title: `${query} — Stack Overflow`, url: `https://stackoverflow.com/search?q=${encodeURIComponent(query)}`, desc: `Developer questions about ${query}.` },
   ];
@@ -269,7 +277,6 @@ export default function Browser() {
     }, 300);
   }, []);
 
-  // Messages from simulated pages: search + download
   useEffect(() => {
     const onMsg = (e: MessageEvent) => {
       if (e.data?.action === 'download') simulateDownload(e.data.filename || 'file.bin');
@@ -312,7 +319,6 @@ export default function Browser() {
 
   return (
     <div className="flex flex-col h-full" style={{ background: 'var(--bg-window)' }}>
-      {/* Top bar */}
       <div className="flex items-center gap-2 px-3 shrink-0" style={{ height: 44, background: 'var(--bg-titlebar)', borderBottom: '1px solid var(--border-subtle)' }}>
         <button onClick={goBack} disabled={!canGoBack} className="p-1.5 rounded hover:bg-[var(--bg-hover)] disabled:opacity-30"><ArrowLeft size={16} style={{ color: 'var(--text-primary)' }} /></button>
         <button onClick={goForward} disabled={!canGoForward} className="p-1.5 rounded hover:bg-[var(--bg-hover)] disabled:opacity-30"><ArrowRight size={16} style={{ color: 'var(--text-primary)' }} /></button>
@@ -331,7 +337,6 @@ export default function Browser() {
         </button>
       </div>
 
-      {/* Bookmarks */}
       {bookmarks.length > 0 && (
         <div className="flex items-center gap-1 px-3 shrink-0 overflow-x-auto custom-scrollbar" style={{ height: 32, background: 'var(--bg-titlebar)', borderBottom: '1px solid var(--border-subtle)' }}>
           {bookmarks.map((bm) => (
@@ -343,7 +348,6 @@ export default function Browser() {
         </div>
       )}
 
-      {/* Privacy toolbar */}
       <div className="flex items-center gap-3 px-3 shrink-0" style={{ height: 28, background: vpnEnabled ? 'rgba(34,197,94,0.1)' : 'var(--bg-titlebar)', borderBottom: '1px solid var(--border-subtle)' }}>
         <button onClick={() => setVpnEnabled(!vpnEnabled)} className="flex items-center gap-1.5 px-2 py-1 rounded hover:bg-[var(--bg-hover)]">
           <Shield size={12} style={{ color: vpnEnabled ? '#22c55e' : 'var(--text-disabled)' }} />
@@ -364,7 +368,6 @@ export default function Browser() {
         </div>
       </div>
 
-      {/* Downloads */}
       {showDownloads && downloads.length > 0 && (
         <div className="shrink-0 custom-scrollbar overflow-auto" style={{ maxHeight: 150, background: 'var(--bg-titlebar)', borderBottom: '1px solid var(--border-subtle)', padding: 8 }}>
           {downloads.map((d) => (
@@ -379,7 +382,6 @@ export default function Browser() {
         </div>
       )}
 
-      {/* Tabs */}
       <div className="flex items-center gap-1 px-2 shrink-0 overflow-x-auto custom-scrollbar" style={{ height: 36, background: 'var(--bg-titlebar)', borderBottom: '1px solid var(--border-subtle)' }}>
         {tabs.map((tab) => (
           <div key={tab.id} onClick={() => setActiveTabId(tab.id)} className="flex items-center gap-2 px-3 py-1.5 rounded-t-lg cursor-pointer shrink-0" style={{ maxWidth: 180, minWidth: 100, background: tab.id === activeTabId ? 'var(--bg-window)' : 'transparent', borderTop: tab.id === activeTabId ? '2px solid var(--accent-primary)' : '2px solid transparent' }}>
