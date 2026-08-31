@@ -99,12 +99,15 @@ export default function Pong() {
 
       // Move paddles
       const paddleSpeed = 6;
-      if (keys.current['w'] || keys.current['W']) leftPaddle.current.y = Math.max(0, leftPaddle.current.y - paddleSpeed);
-      if (keys.current['s'] || keys.current['S']) leftPaddle.current.y = Math.min(CANVAS_H - PADDLE_H, leftPaddle.current.y + paddleSpeed);
-      
+
+      if (keys.current['KeyW']) {leftPaddle.current.y = Math.max(0, leftPaddle.current.y - paddleSpeed);}
+
+      if (keys.current['KeyS']) {leftPaddle.current.y = Math.min(CANVAS_H - PADDLE_H, leftPaddle.current.y + paddleSpeed);}
+
       if (modeRef.current === '2p') {
-        if (keys.current['ArrowUp']) rightPaddle.current.y = Math.max(0, rightPaddle.current.y - paddleSpeed);
-        if (keys.current['ArrowDown']) rightPaddle.current.y = Math.min(CANVAS_H - PADDLE_H, rightPaddle.current.y + paddleSpeed);
+        if (keys.current['ArrowUp']) {rightPaddle.current.y = Math.max(0, rightPaddle.current.y - paddleSpeed);}
+
+        if (keys.current['ArrowDown']) {rightPaddle.current.y = Math.min(CANVAS_H - PADDLE_H, rightPaddle.current.y + paddleSpeed);}
       } else {
         // AI
         const diff = aiDiffRef.current;
@@ -238,24 +241,31 @@ export default function Pong() {
   // Keyboard
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      keys.current[e.key] = true;
-      if (e.key === ' ' && gameStateRef.current === 'playing' && waitingForServe.current) {
+      keys.current[e.code] = true;
+
+      if (e.code === 'Space' && gameStateRef.current === 'playing' && waitingForServe.current) {
         e.preventDefault();
         waitingForServe.current = false;
       }
-      if ((e.key === 'p' || e.key === 'P') && gameStateRef.current === 'playing') {
-        setGameState('paused');
-        gameStateRef.current = 'paused';
-      } else if ((e.key === 'p' || e.key === 'P') && gameStateRef.current === 'paused') {
-        setGameState('playing');
-        gameStateRef.current = 'playing';
+
+      if (e.code === 'KeyP') {
+        if (gameStateRef.current === 'playing') {
+          setGameState('paused');
+          gameStateRef.current = 'paused';
+        } else if (gameStateRef.current === 'paused') {
+          setGameState('playing');
+          gameStateRef.current = 'playing';
+        }
       }
     };
+
     const handleKeyUp = (e: KeyboardEvent) => {
-      keys.current[e.key] = false;
+      keys.current[e.code] = false;
     };
+
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
+
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
