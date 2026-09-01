@@ -187,7 +187,7 @@ export const APP_REGISTRY: AppDefinition[] = [
     icon: 'MessageSquare',
     category: 'Internet',
     description: 'Instant messaging interface',
-    defaultSize: { width: 480, height: 600 },
+    defaultSize: { width: 580, height: 600 },
     minSize: { width: 320, height: 400 },
   },
   {
@@ -234,7 +234,7 @@ export const APP_REGISTRY: AppDefinition[] = [
     icon: 'Music',
     category: 'Media',
     description: 'Audio player with playlist and visualization',
-    defaultSize: { width: 520, height: 440 },
+    defaultSize: { width: 520, height: 600 },
     minSize: { width: 360, height: 320 },
   },
   {
@@ -326,7 +326,7 @@ export const APP_REGISTRY: AppDefinition[] = [
     icon: 'X',
     category: 'Games',
     description: '2-player and AI tic-tac-toe',
-    defaultSize: { width: 400, height: 440 },
+    defaultSize: { width: 400, height: 490 },
     minSize: { width: 280, height: 320 },
   },
   {
@@ -335,7 +335,7 @@ export const APP_REGISTRY: AppDefinition[] = [
     icon: 'Hash',
     category: 'Games',
     description: 'Number sliding puzzle',
-    defaultSize: { width: 400, height: 480 },
+    defaultSize: { width: 400, height: 530 },
     minSize: { width: 320, height: 400 },
   },
   {
